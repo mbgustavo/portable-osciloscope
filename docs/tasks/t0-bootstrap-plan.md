@@ -10,6 +10,7 @@ Create the first executable project skeleton so future tasks can implement featu
 - Wire Qt Widgets and PortAudio dependency scaffolding.
 - Add initial CI build workflow.
 - Add test framework wiring and one smoke test target if feasible.
+- Add opt-in coverage reporting for executable code.
 
 ## Deliverables
 
@@ -24,7 +25,8 @@ Create the first executable project skeleton so future tasks can implement featu
 - Initial test tree:
   - `tests/CMakeLists.txt`
   - one minimal smoke test target (or documented reason if deferred)
-- CI workflow to configure and build on Linux and Windows.
+- Coverage target that runs tests and writes reports under `build-coverage/coverage/`.
+- CI workflow to configure, build, test, and run Linux coverage.
 - Short setup notes in docs.
 
 ## Execution Steps
@@ -55,9 +57,16 @@ Create the first executable project skeleton so future tasks can implement featu
 5. Add CI bootstrap build
 
 - Create workflow to configure and build on Linux and Windows.
-- Keep CI scope to build/smoke only for T0.
+- Keep Windows CI scope to build/smoke only for T0.
+- Run coverage on Linux using the CMake `coverage` target.
 
-6. Document verified commands
+6. Add coverage reporting
+
+- Add `OSCILLOSCOPE_ENABLE_COVERAGE` CMake option.
+- Generate text, HTML, and XML reports with `gcovr`.
+- Limit coverage support to GCC/Clang-compatible compilers during bootstrap.
+
+7. Document verified commands
 
 - Record exact configure/build/test commands that were verified during T0.
 - Update `AGENTS.md` only with facts confirmed by repo config.
@@ -67,6 +76,7 @@ Create the first executable project skeleton so future tasks can implement featu
 - Required:
   - Build succeeds in CI for Linux and Windows.
   - CTest discovers at least one test target, if feasible.
+  - Linux coverage job generates report artifacts.
 - Preferred:
   - Minimal startup smoke verification.
 - If not feasible yet:
@@ -78,6 +88,7 @@ Create the first executable project skeleton so future tasks can implement featu
 - CI executes and reports build status on both target OSes.
 - Project structure supports T1-T3 without rework.
 - Test wiring exists, with at least one smoke test or a documented short-term gap.
+- Coverage wiring exists and can be run with the documented CMake target when `gcovr` and dependencies are installed.
 
 ## Risks and Mitigations
 
@@ -87,3 +98,5 @@ Create the first executable project skeleton so future tasks can implement featu
   - Mitigation: keep T0 smoke test non-GUI when needed; add GUI smoke in later tasks.
 - PortAudio packaging variance across environments.
   - Mitigation: decouple compile-time discovery from runtime device checks in T0.
+- Coverage support differs by compiler.
+  - Mitigation: support GCC/Clang first and keep Windows/MSVC coverage out of T0 scope.

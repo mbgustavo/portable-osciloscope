@@ -45,3 +45,30 @@ jobs:
 
       - name: Test
         run: ctest --test-dir build --output-on-failure -C Release
+
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev portaudio19-dev pkg-config gcovr
+
+      - name: Configure coverage
+        run: cmake -S . -B build-coverage -DCMAKE_BUILD_TYPE=Debug -DOSCILLOSCOPE_ENABLE_COVERAGE=ON
+
+      - name: Build and generate coverage
+        run: cmake --build build-coverage --target coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            build-coverage/coverage/index.html
+            build-coverage/coverage/*.css
+            build-coverage/coverage/coverage.xml

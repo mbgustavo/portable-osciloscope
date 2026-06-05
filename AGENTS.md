@@ -10,7 +10,9 @@
 - Configure: `cmake -S . -B build`
 - Build: `cmake --build build --config Release`
 - Test: `ctest --test-dir build --output-on-failure -C Release`
+- Coverage: `cmake -S . -B build-coverage -DCMAKE_BUILD_TYPE=Debug -DOSCILLOSCOPE_ENABLE_COVERAGE=ON` then `cmake --build build-coverage --target coverage`
 - If local configure fails with missing `Qt6Config.cmake` or PortAudio, install dependencies first; CI reference is `.github/workflows/bootstrap-build.yml`.
+- Coverage requires `gcovr` and is currently supported only with GCC/Clang-compatible compilers.
 
 ## Canonical Docs (use these first)
 
@@ -36,4 +38,5 @@
 - Prioritize high-risk paths as they are implemented: audio capture flow, ring buffer handoff, DSP pipeline, and visualization data flow.
 - Do not reduce coverage in touched areas without documenting the rationale and a follow-up plan.
 - If a change cannot be automated yet, document the testing gap and the manual verification performed.
-- When coverage tooling is added, treat no coverage regression on changed code as the default expectation.
+- Treat no coverage regression on changed code as the default expectation.
+- Document manual verification and follow-up automation tasks when coverage cannot be collected for a change.

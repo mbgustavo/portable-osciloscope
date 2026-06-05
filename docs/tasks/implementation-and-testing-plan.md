@@ -2,16 +2,19 @@
 
 ## Objective
 
-Implement the project in roadmap order while adding automated tests whenever feasible at each step.
+Implement the project in roadmap order while adding automated tests and coverage checks whenever feasible at each step.
 
 ## Cross-Cutting Testing Rule
 
 - For every implementation task, add tests when feasible at that stage.
+- Run the coverage target for changes that affect executable code when local dependencies support it.
+- Treat no coverage regression on changed code as the default completion requirement.
 - If automation is not feasible yet, document:
   - what is currently untested
   - why it is not yet automated
   - manual verification performed
   - follow-up task to automate it
+  - whether coverage was skipped and why
 
 ## Implementation Tasks
 
@@ -19,8 +22,9 @@ Implement the project in roadmap order while adding automated tests whenever fea
 
 - Create src/, tests/, cmake/, and third-party dependency wiring.
 - Add top-level CMakeLists.txt for C++20 + Qt6 Widgets + PortAudio.
+- Add opt-in coverage tooling through CMake/CTest.
 - Add basic CI workflow that configures and builds (no runtime audio tests yet).
-- Done when: clean clone can configure and build app skeleton on Linux and Windows.
+- Done when: clean clone can configure and build app skeleton on Linux and Windows, and Linux CI can generate coverage reports.
 
 ### T1 - Qt app skeleton (roadmap priority #1)
 
