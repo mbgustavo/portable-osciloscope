@@ -64,23 +64,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Write-Host "DEBUG H1/H3: cl.exe=$(Get-Command cl.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"
-          Write-Host "DEBUG H1/H3: g++.exe=$(Get-Command g++.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"
-          Write-Host "DEBUG H2: Qt6_DIR=$env:Qt6_DIR"
           cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$env:VCPKG_DEFAULT_TRIPLET" -DVCPKG_OVERLAY_TRIPLETS="$env:VCPKG_OVERLAY_TRIPLETS"
-          Write-Host "DEBUG post-config:"
-          Select-String -Path build/CMakeCache.txt -Pattern 'CMAKE_CXX_COMPILER:|Qt6_DIR:|Qt6Widgets_DIR:'
 
       - name: Build
         run: cmake --build build --config Release
-
-      - name: Upload Windows debug log
-        if: runner.os == 'Windows' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-debug-log
-          path: .cursor/debug-c1a362.log
-          if-no-files-found: ignore
 
       - name: Test
         run: ctest --test-dir build --output-on-failure -C Release

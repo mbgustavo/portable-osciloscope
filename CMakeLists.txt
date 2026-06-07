@@ -35,23 +35,6 @@ endfunction()
 
 find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets)
 
-if(WIN32)
-  # #region agent log
-  string(TIMESTAMP _agent_debug_ts "%s")
-  set(_agent_debug_log "${CMAKE_SOURCE_DIR}/.cursor/debug-c1a362.log")
-  file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/.cursor")
-  file(APPEND "${_agent_debug_log}"
-    "{\"sessionId\":\"c1a362\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H1\",\"location\":\"CMakeLists.txt:configure\",\"message\":\"Windows toolchain after find_package(Qt6)\",\"data\":{\"compiler\":\"${CMAKE_CXX_COMPILER}\",\"compilerId\":\"${CMAKE_CXX_COMPILER_ID}\",\"qt6WidgetsFound\":\"${Qt6Widgets_FOUND}\"},\"timestamp\":${_agent_debug_ts}}\n"
-  )
-  get_target_property(_qt6_widgets_type Qt6::Widgets TYPE)
-  get_target_property(_qt6_widgets_imported Qt6::Widgets IMPORTED)
-  get_target_property(_qt6_widgets_location Qt6::Widgets IMPORTED_LOCATION)
-  file(APPEND "${_agent_debug_log}"
-    "{\"sessionId\":\"c1a362\",\"runId\":\"pre-fix\",\"hypothesisId\":\"H2\",\"location\":\"CMakeLists.txt:configure\",\"message\":\"Qt6::Widgets target properties\",\"data\":{\"type\":\"${_qt6_widgets_type}\",\"imported\":\"${_qt6_widgets_imported}\",\"importedLocation\":\"${_qt6_widgets_location}\"},\"timestamp\":${_agent_debug_ts}}\n"
-  )
-  # #endregion
-endif()
-
 find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
   pkg_check_modules(PORTAUDIO QUIET IMPORTED_TARGET portaudio-2.0)
