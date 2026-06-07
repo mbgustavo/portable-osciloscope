@@ -1,7 +1,9 @@
-name: Bootstrap Build
+name: CI - Build and Test 
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -14,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout
+      - name: Checko  ut
         uses: actions/checkout@v4
 
       - name: Install Linux dependencies
@@ -56,7 +58,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y qt6-base-dev portaudio19-dev pkg-config gcovr
+          sudo apt-get install -y qt6-base-dev portaudio19-dev pkg-config gcovr xmlstarlet
 
       - name: Configure coverage
         run: cmake -S . -B build-coverage -DCMAKE_BUILD_TYPE=Debug -DOSCILLOSCOPE_ENABLE_COVERAGE=ON
