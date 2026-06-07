@@ -1,9 +1,15 @@
 {
-  "name": "osciloscope",
+  "name": "portable-osciloscope",
   "version-string": "0.1.0",
-  "builtin-baseline": "10ceb139a610ebf3c6aa49cdc4a4b7f3db5d3f2b",
+  "builtin-baseline": "b322364f06308bdd24823f9d8f03fe0cc86fd46f",
   "dependencies": [
     "portaudio",
-    "qtbase"
+    {
+      "name": "qtbase",
+      "default-features": false,
+      "features": [
+        "widgets"
+      ]
+    }
   ]
 }
