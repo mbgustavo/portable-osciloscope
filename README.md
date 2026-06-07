@@ -1,5 +1,7 @@
 # Osciloscope
 
+![Line Coverage](https://githubusercontent.com)
+
 Osciloscope is a cross-platform desktop audio analyzer planned for Windows and Linux. It will capture audio from user-selected input devices and visualize the signal in time and frequency domains.
 
 The project is currently in bootstrap stage: the repository has a minimal C++20/Qt Widgets/PortAudio application skeleton, CMake build wiring, CTest wiring, and CI workflow.

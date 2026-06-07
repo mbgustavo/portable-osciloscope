@@ -1,0 +1,136 @@
+name: CI - Build and Test 
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows-release
+      VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
+      VCPKG_BINARY_SOURCES: clear
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev portaudio19-dev pkg-config
+
+      - name: Install Windows Qt
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.1'
+          arch: win64_msvc2022_64
+          cache: true
+
+      - name: Install Windows dependencies
+        if: runner.os == 'Windows'
+        uses: lukka/run-vcpkg@v11
+        with:
+          runVcpkgInstall: false
+          vcpkgJsonGlob: "**/vcpkg.json"
+
+      - name: Install Windows build tools
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: choco install ninja --no-progress -y
+
+      - name: Setup MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$env:VCPKG_DEFAULT_TRIPLET" -DVCPKG_OVERLAY_TRIPLETS="$env:VCPKG_OVERLAY_TRIPLETS"
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -C Release
+
+  coverage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev portaudio19-dev pkg-config gcovr xmlstarlet
+
+      - name: Configure coverage
+        run: cmake -S . -B build-coverage -DCMAKE_BUILD_TYPE=Debug -DOSCILLOSCOPE_ENABLE_COVERAGE=ON
+
+      - name: Build and generate coverage
+        run: cmake --build build-coverage --target coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            build-coverage/coverage/index.html
+            build-coverage/coverage/*.css
+            build-coverage/coverage/coverage.xml
+
+      - name: Extract Coverage Percentage
+        id: extract_cov
+        run: |
+          COVERAGE=$(xmlstarlet sel -t -v "string(//coverage/@line-rate)" build-coverage/coverage/coverage.xml)
+          PERCENTAGE=$(echo "($COVERAGE * 100) / 1" | bc)
+          echo "COVERAGE_PERCENT=${PERCENTAGE}" >> $GITHUB_ENV
+          
+          if [ "$PERCENTAGE" -ge 90 ]; then
+            echo "COLOR=brightgreen" >> $GITHUB_ENV
+          elif [ "$PERCENTAGE" -ge 75 ]; then
+            echo "COLOR=yellow" >> $GITHUB_ENV
+          else
+            echo "COLOR=red" >> $GITHUB_ENV
+          fi
+
+      - name: Generate Coverage Badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          curl -o coverage.svg "https://img.shields.io/badge/coverage-${{ env.COVERAGE_PERCENT }}%25-${{ env.COLOR }}"
+
+      - name: Commit and Push Badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add coverage.svg
+          if ! git diff --staged --quiet; then
+            git commit -m "update coverage badge [skip ci]"
+            git push
+          fi
