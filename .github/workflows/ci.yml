@@ -17,11 +17,11 @@ jobs:
 
     env:
       VCPKG_DEFAULT_TRIPLET: x64-windows-release
-      VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-release
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
+      VCPKG_BINARY_SOURCES: clear
 
     steps:
-      - name: Checko  ut
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Linux dependencies
@@ -35,14 +35,26 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.1'
+          arch: win64_msvc2022_64
           cache: true
 
       - name: Install Windows dependencies
         if: runner.os == 'Windows'
         uses: lukka/run-vcpkg@v11
         with:
-          runVcpkgInstall: true
+          runVcpkgInstall: false
           vcpkgJsonGlob: "**/vcpkg.json"
+
+      - name: Install Windows build tools
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: choco install ninja --no-progress -y
+
+      - name: Setup MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       - name: Configure (Linux)
         if: runner.os == 'Linux'
@@ -52,10 +64,23 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$env:VCPKG_DEFAULT_TRIPLET" -DVCPKG_HOST_TRIPLET="$env:VCPKG_DEFAULT_HOST_TRIPLET" -DVCPKG_OVERLAY_TRIPLETS="$env:VCPKG_OVERLAY_TRIPLETS"
+          Write-Host "DEBUG H1/H3: cl.exe=$(Get-Command cl.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"
+          Write-Host "DEBUG H1/H3: g++.exe=$(Get-Command g++.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"
+          Write-Host "DEBUG H2: Qt6_DIR=$env:Qt6_DIR"
+          cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$env:VCPKG_DEFAULT_TRIPLET" -DVCPKG_OVERLAY_TRIPLETS="$env:VCPKG_OVERLAY_TRIPLETS"
+          Write-Host "DEBUG post-config:"
+          Select-String -Path build/CMakeCache.txt -Pattern 'CMAKE_CXX_COMPILER:|Qt6_DIR:|Qt6Widgets_DIR:'
 
       - name: Build
         run: cmake --build build --config Release
+
+      - name: Upload Windows debug log
+        if: runner.os == 'Windows' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-debug-log
+          path: .cursor/debug-c1a362.log
+          if-no-files-found: ignore
 
       - name: Test
         run: ctest --test-dir build --output-on-failure -C Release
