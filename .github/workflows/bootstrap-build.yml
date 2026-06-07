@@ -92,7 +92,7 @@ jobs:
 
       - name: Generate Coverage Badge
         run: |
-          curl -o coverage.svg "https://shields.io{{ env.COVERAGE_PERCENT }}%25-${{ env.COLOR }}"
+          curl -o coverage.svg "https://img.shields.io/badge/coverage-${{ env.COVERAGE_PERCENT }}%25-${{ env.COLOR }}"
 
       - name: Commit and Push Badge
         run: |
