@@ -15,6 +15,11 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows-release
+      VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-release
+      VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
+
     steps:
       - name: Checko  ut
         uses: actions/checkout@v4
@@ -40,7 +45,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake"
+          cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$env:VCPKG_DEFAULT_TRIPLET" -DVCPKG_HOST_TRIPLET="$env:VCPKG_DEFAULT_HOST_TRIPLET" -DVCPKG_OVERLAY_TRIPLETS="$env:VCPKG_OVERLAY_TRIPLETS"
 
       - name: Build
         run: cmake --build build --config Release
