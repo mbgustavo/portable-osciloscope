@@ -1,6 +1,6 @@
 # Osciloscope
 
-![Line Coverage](https://githubusercontent.com)
+![Line Coverage](https://github.com/mbgustavo/portable-osciloscope/blob/master/coverage.svg)
 
 Osciloscope is a cross-platform desktop audio analyzer planned for Windows and Linux. It will capture audio from user-selected input devices and visualize the signal in time and frequency domains.
 
