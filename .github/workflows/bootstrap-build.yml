@@ -72,3 +72,31 @@ jobs:
             build-coverage/coverage/index.html
             build-coverage/coverage/*.css
             build-coverage/coverage/coverage.xml
+
+      - name: Extract Coverage Percentage
+        id: extract_cov
+        run: |
+          COVERAGE=$(xmlstarlet sel -t -v "string(//coverage/@line-rate)" build-coverage/coverage/coverage.xml)
+          PERCENTAGE=$(echo "($COVERAGE * 100) / 1" | bc)
+          echo "COVERAGE_PERCENT=${PERCENTAGE}" >> $GITHUB_ENV
+          
+          if [ "$PERCENTAGE" -ge 90 ]; then
+            echo "COLOR=brightgreen" >> $GITHUB_ENV
+          elif [ "$PERCENTAGE" -ge 75 ]; then
+            echo "COLOR=yellow" >> $GITHUB_ENV
+          else
+            echo "COLOR=red" >> $GITHUB_ENV
+          fi
+
+      - name: Generate Coverage Badge
+        run: |
+          curl -o coverage.svg "https://shields.io{{ env.COVERAGE_PERCENT }}%25-${{ env.COLOR }}"
+
+      - name: Commit and Push Badge
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add coverage.svg
+          # Only commit if the badge file has actually changed to avoid redundant commits
+          git diff-index --quiet HEAD || git commit -m "update coverage badge [skip ci]"
+          git push
