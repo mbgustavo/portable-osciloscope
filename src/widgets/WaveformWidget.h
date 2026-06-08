@@ -3,11 +3,11 @@
 #include <QWidget>
 
 class WaveformWidget : public QWidget {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit WaveformWidget(QWidget* parent = nullptr);
+  explicit WaveformWidget(QWidget* parent = nullptr);
 
 protected:
-    void paintEvent(QPaintEvent* event) override;
+  void paintEvent(QPaintEvent* event) override;
 };

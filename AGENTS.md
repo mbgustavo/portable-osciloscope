@@ -3,13 +3,17 @@
 ## Repository Reality Check
 
 - The repo now includes a bootstrap C++/Qt/PortAudio codebase (`src/`, `tests/`, `CMakeLists.txt`).
-- Build/test automation currently exists via CMake/CTest and GitHub Actions only; no lint/typecheck tooling is configured yet.
+- Build/test/lint automation exists via CMake/CTest, `scripts/lint.sh`, GitHub Actions, and pre-commit.
 
 ## Verified Commands
 
 - Configure: `cmake -S . -B build`
 - Build: `cmake --build build --config Release`
 - Test: `ctest --test-dir build --output-on-failure -C Release`
+- Lint (format + CMake style): `./scripts/lint.sh`
+- Lint (include clang-tidy): `./scripts/lint.sh --all` (requires configured `build/`)
+- Pre-commit (requires pre-commit): `pre-commit run --all-files`
+- Lint/CI details and configuration reference: `docs/rules/lint-and-ci.md`
 - Coverage: `cmake -S . -B build-coverage -DCMAKE_BUILD_TYPE=Debug -DOSCILLOSCOPE_ENABLE_COVERAGE=ON` then `cmake --build build-coverage --target coverage`
 - If local configure fails with missing `Qt6Config.cmake` or PortAudio, install dependencies first; CI reference is `.github/workflows/bootstrap-build.yml`.
 - Coverage requires `gcovr` and is currently supported only with GCC/Clang-compatible compilers.
@@ -19,6 +23,7 @@
 - Product requirements: `docs/product/product-spec.md`
 - Architecture decisions and planned module boundaries: `docs/architecture/architecture.md`
 - Implementation sequencing and scope boundaries: `docs/roadmap/roadmap.md`
+- Lint, pre-commit, CI, and editor formatting: `docs/rules/lint-and-ci.md`
 
 ## Working Conventions For Future Code Changes
 
