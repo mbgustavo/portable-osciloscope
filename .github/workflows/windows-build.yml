@@ -1,0 +1,59 @@
+on:
+  workflow_call:
+    inputs:
+      upload-artifact:
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  windows-build:
+    environment: release
+    name: Windows Build
+    runs-on: windows-latest
+
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows-release
+      VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
+      VCPKG_BINARY_SOURCES: clear
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Windows Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.8.1"
+          arch: win64_msvc2022_64
+          cache: true
+
+      - name: Install Windows dependencies
+        uses: lukka/run-vcpkg@v11
+        with:
+          runVcpkgInstall: false
+          vcpkgJsonGlob: "**/vcpkg.json"
+
+      - name: Install Windows build tools
+        shell: pwsh
+        run: choco install ninja --no-progress -y
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$env:VCPKG_DEFAULT_TRIPLET" -DVCPKG_OVERLAY_TRIPLETS="$env:VCPKG_OVERLAY_TRIPLETS"
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Upload build
+        if: ${{ inputs.upload-artifact }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: windows-build
+          path: build/

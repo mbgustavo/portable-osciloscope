@@ -1,0 +1,65 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  linux-build:
+    uses: ./.github/workflows/linux-build.yml
+
+  windows-build:
+    uses: ./.github/workflows/windows-build.yml
+    with:
+      upload-artifact: true
+
+  release:
+    name: Release
+    environment: release
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
+    needs: [linux-build, windows-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download Linux build
+        uses: actions/download-artifact@v7
+        with:
+          name: linux-build
+          path: artifacts/linux
+
+      - name: Download Windows build
+        uses: actions/download-artifact@v7
+        with:
+          name: windows-build
+          path: artifacts/windows
+
+      - name: Restore Linux executable permissions
+        run: chmod +x artifacts/linux/portable-osciloscope
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(awk '/^[[:space:]]*VERSION[[:space:]]+/ { print $2; exit }' CMakeLists.txt)
+          echo "version=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Create Tag
+        run: |
+          git tag ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version }}
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}
+          artifacts: |
+            artifacts/linux/portable-osciloscope
+            artifacts/windows/portable-osciloscope.exe
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-name: CI
+name: CI - Build & Test
 
 on:
   push:
@@ -9,78 +9,10 @@ on:
 
 jobs:
   linux-build:
-    name: Linux Build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y qt6-base-dev portaudio19-dev pkg-config
-
-      - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build
-        run: cmake --build build --config Release
-
-      - name: Upload build
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build
-          path: build/
+    uses: ./.github/workflows/linux-build.yml
 
   windows-build:
-    name: Windows Build
-    runs-on: windows-latest
-
-    env:
-      VCPKG_DEFAULT_TRIPLET: x64-windows-release
-      VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
-      VCPKG_BINARY_SOURCES: clear
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Install Windows Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: "6.8.1"
-          arch: win64_msvc2022_64
-          cache: true
-
-      - name: Install Windows dependencies
-        uses: lukka/run-vcpkg@v11
-        with:
-          runVcpkgInstall: false
-          vcpkgJsonGlob: "**/vcpkg.json"
-
-      - name: Install Windows build tools
-        shell: pwsh
-        run: choco install ninja --no-progress -y
-
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
-      - name: Configure
-        shell: pwsh
-        run: |
-          cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="$env:VCPKG_DEFAULT_TRIPLET" -DVCPKG_OVERLAY_TRIPLETS="$env:VCPKG_OVERLAY_TRIPLETS"
-
-      - name: Build
-        run: cmake --build build --config Release
-
-      - name: Upload build
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: build/
+    uses: ./.github/workflows/windows-build.yml
 
   coverage:
     name: Coverage
@@ -107,7 +39,7 @@ jobs:
         run: cmake --build build-coverage --target coverage
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-report
           path: |
@@ -200,52 +132,3 @@ jobs:
 
       - name: Lint
         run: ./scripts/lint.sh --all
-
-  release:
-    name: Release
-    environment: release
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
-    needs: [linux-build, windows-build]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Download Linux build
-        uses: actions/download-artifact@v7
-        with:
-          name: linux-build
-          path: artifacts/linux
-
-      - name: Download Windows build
-        uses: actions/download-artifact@v7
-        with:
-          name: windows-build
-          path: artifacts/windows
-
-      - name: Restore Linux executable permissions
-        run: chmod +x artifacts/linux/portable-osciloscope
-
-      - name: Extract version
-        id: version
-        run: |
-          VERSION=$(awk '/^[[:space:]]*VERSION[[:space:]]+/ { print $2; exit }' CMakeLists.txt)
-          echo "version=v${VERSION}" >> "$GITHUB_OUTPUT"
-
-      - name: Create Tag
-        run: |
-          git tag ${{ steps.version.outputs.version }}
-          git push origin ${{ steps.version.outputs.version }}
-
-      - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ steps.version.outputs.version }}
-          name: ${{ steps.version.outputs.version }}
-          artifacts: |
-            artifacts/linux/portable-osciloscope
-            artifacts/windows/portable-osciloscope.exe
-          token: ${{ secrets.GITHUB_TOKEN }}
