@@ -1,4 +1,4 @@
-name: CI - Build and Test
+name: CI
 
 on:
   push:
@@ -9,11 +9,12 @@ on:
 
 jobs:
   linux-build:
+    name: Linux Build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |
@@ -33,6 +34,7 @@ jobs:
           path: build/
 
   windows-build:
+    name: Windows Build
     runs-on: windows-latest
 
     env:
@@ -42,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Windows Qt
         uses: jurplel/install-qt-action@v4
@@ -81,13 +83,14 @@ jobs:
           path: build/
 
   coverage:
+    name: Coverage
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.head_ref || github.ref_name }}
@@ -143,18 +146,22 @@ jobs:
           fi
 
   test:
+    name: Test
     needs: linux-build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download Linux build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: linux-build
           path: build
+
+      - name: Restore Linux executable permissions
+        run: chmod +x build/portable-osciloscope build/tests/signal_monitor_smoke_test
 
       - name: Install runtime dependencies
         run: |
@@ -164,16 +171,17 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure -C Release
 
-  lint:
+  code-quality:
+    name: Code Quality
     needs: linux-build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download Linux build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: linux-build
           path: build
@@ -194,6 +202,7 @@ jobs:
         run: ./scripts/lint.sh --all
 
   release:
+    name: Release
     environment: release
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
     needs: [linux-build, windows-build]
@@ -203,19 +212,22 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download Linux build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: linux-build
           path: artifacts/linux
 
       - name: Download Windows build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: windows-build
           path: artifacts/windows
+
+      - name: Restore Linux executable permissions
+        run: chmod +x artifacts/linux/portable-osciloscope
 
       - name: Extract version
         id: version
