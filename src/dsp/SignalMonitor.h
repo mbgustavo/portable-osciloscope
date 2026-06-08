@@ -4,5 +4,5 @@
 
 class SignalMonitor {
 public:
-    static float computeRms(const std::vector<float>& samples);
+  static float computeRms(const std::vector<float>& samples);
 };
