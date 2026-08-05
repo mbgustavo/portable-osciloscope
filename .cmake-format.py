@@ -4,9 +4,8 @@
 with section("format"):
     line_width = 120
     tab_size = 2
-    use_tabspaces = True
+    use_tabchars = False
     max_pargs_hwrap = 2
-    dangle_parsing = "autodetect"
 
 with section("lint"):
     disabled_codes = ["C0301"]

@@ -5,8 +5,8 @@
 class AudioManager {
 public:
   bool initialize();
-  void shutdown();
-  std::string lastError() const;
+  static void shutdown();
+  [[nodiscard]] std::string lastError() const;
 
 private:
   std::string last_error_;
