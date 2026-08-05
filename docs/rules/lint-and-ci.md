@@ -17,7 +17,7 @@ All layers share the same configuration files at the repository root.
 ```text
 .clang-format          C++ formatting rules
 .clang-tidy            C++ static analysis rules
-.cmake-format.py       CMake formatting rules
+.cmake-format.py       CMake formatting and lint rules
 scripts/lint.sh        Local and CI lint runner
 .pre-commit-config.yaml Pre-commit hook definitions
 .github/workflows/ci.yml GitHub Actions workflow
@@ -61,7 +61,7 @@ Requires `build/compile_commands.json` from CMake.
 
 ### `.cmake-format.py`
 
-Defines CMake formatting for `cmake-format` (from the `cmakelang` package). Key settings:
+Defines CMake formatting and lint rules for `cmake-format` and `cmake-lint` (from the `cmakelang` package). Key settings:
 
 - 120-character line width
 - 2-space indentation
@@ -69,7 +69,7 @@ Defines CMake formatting for `cmake-format` (from the `cmakelang` package). Key 
 Used by:
 
 - `scripts/lint.sh --cmake`
-- Pre-commit `cmake-format` hook
+- Pre-commit `cmake-format` and `cmake-lint` hooks
 - Editor format-on-save (via cmake-format extension)
 
 ### `.pre-commit-config.yaml`
@@ -84,6 +84,7 @@ Configures [pre-commit](https://pre-commit.com) hooks:
 | `check-added-large-files` | pre-commit-hooks | Block files larger than 512 KB |
 | `clang-format` | mirrors-clang-format v19.1.4 | Auto-format staged C++ files |
 | `cmake-format` | cmake-format-precommit v0.6.13 | Auto-format staged CMake files |
+| `cmake-lint` | cmake-format-precommit v0.6.13 | Lint staged CMake files |
 | `clang-tidy` | local (`scripts/lint.sh --tidy`) | Static analysis on all `src/` and `tests/` C++ files |
 
 The clang-tidy hook uses `language: system`, so it requires `clang-tidy` and a configured `build/` directory on the developer machine.
@@ -108,7 +109,7 @@ The central lint runner used locally and in CI.
 | Flag | Check | Tools | Config |
 | --- | --- | --- | --- |
 | `--format` | C++ formatting | `clang-format --dry-run --Werror` | `.clang-format` |
-| `--cmake` | CMake formatting | `cmake-format --check` | `.cmake-format.py` |
+| `--cmake` | CMake formatting and lint | `cmake-format --check`, `cmake-lint` | `.cmake-format.py` |
 | `--tidy` | C++ static analysis | `clang-tidy` | `.clang-tidy` + `build/compile_commands.json` |
 | `--all` | All of the above | — | — |
 | *(no args)* | `--format` + `--cmake` | — | — |
@@ -122,7 +123,7 @@ The central lint runner used locally and in CI.
 
 ```sh
 CLANG_FORMAT=/path/to/clang-format ./scripts/lint.sh --format
-CMAKE_FORMAT=/path/to/cmake-format ./scripts/lint.sh --cmake
+CMAKE_FORMAT=/path/to/cmake-format CMAKE_LINT=/path/to/cmake-lint ./scripts/lint.sh --cmake
 CLANG_TIDY=/path/to/clang-tidy BUILD_DIR=build ./scripts/lint.sh --tidy
 ```
 
@@ -197,7 +198,7 @@ Runs only on `workflow_dispatch` from `master`, after `linux-build` and `windows
 | --- | --- | --- |
 | `clang-format` | `lint.sh --format` | `sudo apt install clang-format` |
 | `clang-tidy` | `lint.sh --tidy`, pre-commit | `sudo apt install clang-tidy` |
-| `cmake-format` | `lint.sh --cmake`, pre-commit, editor | `pip install cmakelang` |
+| `cmake-format`, `cmake-lint` | `lint.sh --cmake`, pre-commit, editor | `pip install cmakelang` |
 | `pre-commit` | Git hooks | `pip install pre-commit` |
 | `pip` | pre-commit | `sudo apt install python3-pip` |
 
@@ -221,5 +222,5 @@ Install `clang-tidy` and configure the build directory before committing C++ cha
 
 1. Install recommended extensions from `.vscode/extensions.json`
 2. Run `cmake -S . -B build` so clangd can format with correct context
-3. For CMake, install `cmake-format` (`pip install cmakelang`)
+3. For CMake, install `cmake-format` and `cmake-lint` (`pip install cmakelang`)
 4. Reload the editor window after installing extensions

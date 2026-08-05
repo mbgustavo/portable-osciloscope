@@ -7,6 +7,7 @@ cd "$ROOT"
 
 CLANG_FORMAT="${CLANG_FORMAT:-clang-format}"
 CMAKE_FORMAT="${CMAKE_FORMAT:-cmake-format}"
+CMAKE_LINT="${CMAKE_LINT:-cmake-lint}"
 CLANG_TIDY="${CLANG_TIDY:-clang-tidy}"
 BUILD_DIR="${BUILD_DIR:-build}"
 
@@ -32,10 +33,12 @@ run_format_check() {
   "$CLANG_FORMAT" --dry-run --Werror -style=file "${CXX_SOURCES[@]}"
 }
 
-run_cmake_format_check() {
-  echo "==> Checking CMake formatting (cmake-format)"
+run_cmake_check() {
+  echo "==> Checking CMake formatting and lint"
   require_command "$CMAKE_FORMAT"
+  require_command "$CMAKE_LINT"
   "$CMAKE_FORMAT" --check "${CMAKE_SOURCES[@]}"
+  "$CMAKE_LINT" "${CMAKE_SOURCES[@]}"
 }
 
 run_clang_tidy() {
@@ -67,7 +70,7 @@ usage() {
 Usage: $(basename "$0") [--format] [--cmake] [--tidy] [--all]
 
   --format   Check C++ formatting with clang-format (default)
-  --cmake    Check CMake formatting with cmake-format
+  --cmake    Check CMake formatting and lint with cmake-format/cmake-lint
   --tidy     Run clang-tidy (requires configured build directory)
   --all      Run all checks
 EOF
@@ -99,7 +102,7 @@ main() {
     run_format_check
   fi
   if [[ "$run_cmake" -eq 1 ]]; then
-    run_cmake_format_check
+    run_cmake_check
   fi
   if [[ "$run_tidy" -eq 1 ]]; then
     run_clang_tidy
