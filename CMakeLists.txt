@@ -77,7 +77,12 @@ add_executable(
   src/audio/AudioManager.cpp
   src/audio/RingBuffer.cpp
   src/dsp/SignalMonitor.cpp
-  src/widgets/WaveformWidget.cpp)
+  src/widgets/WaveformWidget.cpp
+  assets/icons/app.qrc)
+
+if(WIN32)
+  target_sources(portable-osciloscope PRIVATE assets/icons/signal.rc)
+endif()
 
 target_include_directories(portable-osciloscope PRIVATE src)
 
