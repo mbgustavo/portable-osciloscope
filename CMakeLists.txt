@@ -24,33 +24,8 @@ option(
   "Enable test coverage instrumentation"
   OFF)
 
-if(OSCILLOSCOPE_ENABLE_COVERAGE)
-  if(NOT
-     CMAKE_CXX_COMPILER_ID
-     MATCHES
-     "GNU|Clang|AppleClang")
-    message(FATAL_ERROR "Coverage is currently supported only with GCC or Clang-compatible compilers.")
-  endif()
-
-  find_program(GCOVR_EXECUTABLE gcovr)
-  if(NOT GCOVR_EXECUTABLE)
-    message(FATAL_ERROR "gcovr is required when OSCILLOSCOPE_ENABLE_COVERAGE=ON.")
-  endif()
-endif()
-
-function(osciloscope_enable_coverage target_name)
-  if(OSCILLOSCOPE_ENABLE_COVERAGE)
-    target_compile_options(
-      ${target_name}
-      PRIVATE --coverage
-              -O0
-              -g)
-    target_link_options(
-      ${target_name}
-      PRIVATE
-      --coverage)
-  endif()
-endfunction()
+include(cmake/Coverage.cmake)
+osciloscope_configure_coverage()
 
 find_package(
   Qt6
@@ -115,18 +90,5 @@ if(OSCILLOSCOPE_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 
-  if(OSCILLOSCOPE_ENABLE_COVERAGE)
-    add_custom_target(
-      coverage
-      COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${CMAKE_BINARY_DIR} --output-on-failure
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage
-      COMMAND
-        ${GCOVR_EXECUTABLE} --root ${CMAKE_SOURCE_DIR} --filter ${CMAKE_SOURCE_DIR}/src --filter
-        ${CMAKE_SOURCE_DIR}/tests --exclude ${CMAKE_BINARY_DIR} --print-summary --html-details
-        ${CMAKE_BINARY_DIR}/coverage/index.html --xml-pretty --xml ${CMAKE_BINARY_DIR}/coverage/coverage.xml
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      COMMENT "Running tests and generating coverage report"
-      VERBATIM
-      DEPENDS portable-osciloscope signal_monitor_smoke_test)
-  endif()
+  osciloscope_add_coverage_target()
 endif()

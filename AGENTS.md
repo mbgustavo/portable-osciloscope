@@ -15,7 +15,7 @@
 - Pre-commit (requires pre-commit): `pre-commit run --all-files`
 - Lint/CI details and configuration reference: `docs/rules/lint-and-ci.md`
 - Coverage: `cmake -S . -B build-coverage -DCMAKE_BUILD_TYPE=Debug -DOSCILLOSCOPE_ENABLE_COVERAGE=ON` then `cmake --build build-coverage --target coverage`
-- If local configure fails with missing `Qt6Config.cmake` or PortAudio, install dependencies first; CI reference is `.github/workflows/bootstrap-build.yml`.
+- If local configure fails with missing `Qt6Config.cmake` or PortAudio, install dependencies first; CI reference is `.github/workflows/ci.yml`.
 - Coverage requires `gcovr` and is currently supported only with GCC/Clang-compatible compilers.
 
 ## Canonical Docs (use these first)

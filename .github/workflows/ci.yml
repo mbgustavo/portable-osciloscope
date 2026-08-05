@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y qt6-base-dev portaudio19-dev pkg-config gcovr xmlstarlet
+          sudo apt-get install -y qt6-base-dev portaudio19-dev pkg-config gcovr
 
       - name: Configure coverage
         run: cmake -S . -B build-coverage -DCMAKE_BUILD_TYPE=Debug -DOSCILLOSCOPE_ENABLE_COVERAGE=ON
@@ -45,13 +45,19 @@ jobs:
           path: |
             build-coverage/coverage/index.html
             build-coverage/coverage/*.css
+            build-coverage/coverage/coverage.txt
             build-coverage/coverage/coverage.xml
 
       - name: Extract Coverage Percentage
         id: extract_cov
         run: |
-          COVERAGE=$(xmlstarlet sel -t -v "string(//coverage/@line-rate)" build-coverage/coverage/coverage.xml)
-          PERCENTAGE=$(echo "($COVERAGE * 100) / 1" | bc)
+          PERCENTAGE=$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse("build-coverage/coverage/coverage.xml").getroot()
+          print(round(float(root.attrib["line-rate"]) * 100))
+          PY
+          )
           echo "COVERAGE_PERCENT=${PERCENTAGE}" >> $GITHUB_ENV
           if [ "$PERCENTAGE" -ge 75 ]; then
             echo "COLOR=brightgreen" >> $GITHUB_ENV

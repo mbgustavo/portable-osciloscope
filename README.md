@@ -14,7 +14,7 @@ The project is currently in bootstrap stage: the repository has a minimal C++20/
 - Implementation tasks: `docs/tasks/implementation-and-testing-plan.md`
 - T0 bootstrap plan: `docs/tasks/t0-bootstrap-plan.md`
 - Architecture decision records: `docs/adr/`
-- Lint, pre-commit, and CI: `docs/lint-and-ci.md`
+- Lint, pre-commit, and CI: `docs/rules/lint-and-ci.md`
 
 ## Requirements
 
@@ -35,7 +35,7 @@ If configure fails with missing `Qt6Config.cmake` or PortAudio, install the Qt6 
 
 ## Lint
 
-Formatting and static analysis are enforced in CI and via pre-commit hooks. See `docs/lint-and-ci.md` for configuration details, local setup, and troubleshooting.
+Formatting and static analysis are enforced in CI and via pre-commit hooks. See `docs/rules/lint-and-ci.md` for configuration details, local setup, and troubleshooting.
 
 ```sh
 ./scripts/lint.sh          # format + CMake checks
