@@ -27,6 +27,7 @@
 
 ## Working Conventions For Future Code Changes
 
+- Keep source and documentation lines to a maximum of 120 characters.
 - Keep proposed code/layout aligned with the planned C++/Qt/PortAudio architecture in `docs/architecture/architecture.md` (audio callback -> ring buffer -> DSP -> GUI).
 - Respect roadmap gating in `docs/roadmap/roadmap.md`: waveform/audio-capture milestones come before FFT/spectrum/spectrogram work.
 - If docs and future executable config/scripts diverge, trust executable config/scripts and update docs to match.
@@ -35,6 +36,8 @@
 
 - Before claiming a command works, verify it exists in the repo (scripts, CMake targets, CI workflow, or task runner config).
 - Keep edits focused and minimal; this repository is currently specification-first.
+- When asked to implement a task, spawn a separate follow-up agent after implementation to review the changes.
+- Implement each task on a lowercase kebab-case branch prefixed with the task code. If the current branch already matches this pattern, keep using it; otherwise, create the task branch from a rebased, up-to-date `master` branch.
 
 ## Test Coverage Guidelines
 
