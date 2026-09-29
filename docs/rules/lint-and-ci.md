@@ -170,6 +170,7 @@ pre-commit run --all-files
 ## CI
 
 Defined in `.github/workflows/ci.yml`. On push to `master`, pull requests, and manual `workflow_dispatch`, jobs run in this order:
+All CI jobs use Qt 6.8.2.
 
 ### Parallel initial jobs
 

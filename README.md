@@ -20,7 +20,7 @@ The project is currently in bootstrap stage: the repository has a minimal C++20/
 
 - CMake 3.21+
 - C++20 compiler
-- Qt 6.2+ with Widgets
+- Qt 6.8.x with Widgets
 - PortAudio development files
 - Optional on Windows: vcpkg, using `vcpkg.json`
 
