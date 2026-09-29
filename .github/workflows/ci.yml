@@ -117,7 +117,13 @@ jobs:
           path: build
 
       - name: Restore Linux executable permissions
-        run: chmod +x build/portable-osciloscope build/tests/app_startup_smoke_test build/tests/signal_monitor_smoke_test
+        run: |
+          chmod +x \
+            build/portable-osciloscope \
+            build/tests/app_startup_smoke_test \
+            build/tests/signal_monitor_smoke_test \
+            build/tests/audio_manager_test \
+            build/tests/main_window_test
 
       - name: Install runtime dependencies
         run: |
