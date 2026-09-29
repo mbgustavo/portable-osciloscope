@@ -45,6 +45,8 @@ function(osciloscope_add_coverage_target)
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       COMMENT "Running tests and generating coverage report"
       VERBATIM
-      DEPENDS portable-osciloscope signal_monitor_smoke_test)
+      DEPENDS portable-osciloscope
+              signal_monitor_smoke_test
+              app_startup_smoke_test)
   endif()
 endfunction()

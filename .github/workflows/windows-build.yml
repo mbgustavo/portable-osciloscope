@@ -13,6 +13,7 @@ jobs:
     runs-on: windows-latest
 
     env:
+      QT_VERSION: "6.8.2"
       VCPKG_DEFAULT_TRIPLET: x64-windows-release
       VCPKG_OVERLAY_TRIPLETS: ${{ github.workspace }}/triplets
       VCPKG_BINARY_SOURCES: clear
@@ -24,7 +25,7 @@ jobs:
       - name: Install Windows Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: "6.8.1"
+          version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
           cache: true
 

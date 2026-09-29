@@ -29,7 +29,7 @@ osciloscope_configure_coverage()
 
 find_package(
   Qt6
-  6.2
+  6.8...<6.9
   REQUIRED
   COMPONENTS Widgets)
 
