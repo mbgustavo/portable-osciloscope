@@ -2,11 +2,15 @@
 
 #include <QLabel>
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
+MainWindow::MainWindow(const AudioResult& audioResult, QWidget* parent) : QMainWindow(parent) {
   setWindowTitle("Osciloscope");
   resize(960, 540);
 
-  auto* placeholder = new QLabel("Portable Osciloscope bootstrap complete", this);
+  const QString status =
+      audioResult.succeeded()
+          ? QStringLiteral("Audio backend available")
+          : QStringLiteral("Audio backend unavailable: %1").arg(QString::fromStdString(audioResult.detail));
+  auto* placeholder = new QLabel(status, this);
   placeholder->setAlignment(Qt::AlignCenter);
   setCentralWidget(placeholder);
 }

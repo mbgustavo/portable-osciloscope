@@ -4,13 +4,22 @@
 #include <QtLogging>
 
 #include "MainWindow.h"
+#include "audio/AudioManager.h"
 
 int main(int argc, char* argv[]) {
   QApplication app(argc, argv);
   QApplication::setWindowIcon(QIcon(":/icons/signal.svg"));
   qInfo() << "Application started";
 
-  MainWindow window;
+  AudioManager audioManager;
+  const AudioResult audioResult = audioManager.initialize();
+  if (audioResult.succeeded()) {
+    qInfo() << "PortAudio backend available";
+  } else {
+    qWarning() << "PortAudio backend unavailable:" << QString::fromStdString(audioResult.detail);
+  }
+
+  MainWindow window(audioResult);
   window.show();
 
   if (QApplication::arguments().contains("--smoke-test")) {

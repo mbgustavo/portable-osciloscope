@@ -47,6 +47,8 @@ function(osciloscope_add_coverage_target)
       VERBATIM
       DEPENDS portable-osciloscope
               signal_monitor_smoke_test
+              audio_manager_test
+              main_window_test
               app_startup_smoke_test)
   endif()
 endfunction()
