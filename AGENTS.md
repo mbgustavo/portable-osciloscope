@@ -36,6 +36,7 @@
 
 - Before claiming a command works, verify it exists in the repo (scripts, CMake targets, CI workflow, or task runner config).
 - Keep edits focused and minimal; this repository is currently specification-first.
+- When asked to implement a task, look for its specification in `docs/tasks/`. If it is not found, ask the user whether they want to create one first with `to-spec`.
 - When asked to implement a task, spawn a separate follow-up agent after implementation to review the changes.
 - Implement each task on a lowercase kebab-case branch prefixed with the task code. If the current branch already matches this pattern, keep using it; otherwise, create the task branch from a rebased, up-to-date `master` branch.
 
