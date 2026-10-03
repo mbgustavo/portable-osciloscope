@@ -24,9 +24,13 @@
 - Architecture decisions and planned module boundaries: `docs/architecture/architecture.md`
 - Implementation sequencing and scope boundaries: `docs/roadmap/roadmap.md`
 - Lint, pre-commit, CI, and editor formatting: `docs/rules/lint-and-ci.md`
+- Temporary implementation plans: `tmp/` (ignored by Git; used to hand plans from a planning
+  session to a fresh implementation session)
 
 ## Working Conventions For Future Code Changes
 
+- This repository uses both OpenCode and Codex. Create and maintain agent skills in `.agents/skills/`; `.opencode/skills` is a symlink to that directory and keeps those skills compatible with OpenCode.
+- When adding a test executable, add its build path to the `Restore Linux executable permissions` step in `.github/workflows/ci.yml` so the downloaded artifact can run under CTest.
 - Keep source and documentation lines to a maximum of 120 characters.
 - Keep proposed code/layout aligned with the planned C++/Qt/PortAudio architecture in `docs/architecture/architecture.md` (audio callback -> ring buffer -> DSP -> GUI).
 - Respect roadmap gating in `docs/roadmap/roadmap.md`: waveform/audio-capture milestones come before FFT/spectrum/spectrogram work.
@@ -36,7 +40,10 @@
 
 - Before claiming a command works, verify it exists in the repo (scripts, CMake targets, CI workflow, or task runner config).
 - Keep edits focused and minimal; this repository is currently specification-first.
-- When asked to implement a task, look for its specification in `docs/tasks/`. If it is not found, ask the user whether they want to create one first with `to-spec`.
+- When asked to implement a task, look for its specification in `tmp/` first. If it is not
+  found, ask the user whether they want to create one first with `to-spec`.
+- When creating a PR for a task, check `tmp/` for its plan and include the plan in the PR
+  description if one exists.
 - When asked to implement a task, spawn a separate follow-up agent after implementation to review the changes.
 - Implement each task on a lowercase kebab-case branch prefixed with the task code. If the current branch already matches this pattern, keep using it; otherwise, create the task branch from a rebased, up-to-date `master` branch.
 

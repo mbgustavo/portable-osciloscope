@@ -12,7 +12,8 @@ The project is currently in bootstrap stage: the repository has a minimal C++20/
 - Architecture: `docs/architecture/architecture.md`
 - Roadmap: `docs/roadmap/roadmap.md`
 - Implementation tasks: `docs/tasks/implementation-and-testing-plan.md`
-- T0 bootstrap plan: `docs/tasks/t0-bootstrap-plan.md`
+- Temporary implementation plans: `tmp/` (ignored by Git; used to hand plans from a planning
+  session to a fresh implementation session)
 - Architecture decision records: `docs/adr/`
 - Lint, pre-commit, and CI: `docs/rules/lint-and-ci.md`
 
