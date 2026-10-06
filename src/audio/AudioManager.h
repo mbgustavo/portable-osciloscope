@@ -1,7 +1,16 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
+#include <vector>
+
+struct AudioInputDevice {
+  int index{};
+  std::string name;
+  int max_input_channels{};
+  double default_sample_rate{};
+};
 
 enum class AudioBackendState : std::uint8_t {
   Uninitialized,
@@ -31,6 +40,9 @@ public:
     virtual int initialize() = 0;
     virtual int terminate() = 0;
     [[nodiscard]] virtual std::string errorText(int error_code) const = 0;
+    [[nodiscard]] virtual int deviceCount() const = 0;
+    [[nodiscard]] virtual int defaultInputDevice() const = 0;
+    [[nodiscard]] virtual std::optional<AudioInputDevice> inputDevice(int index) const = 0;
   };
 
   AudioManager();
@@ -45,6 +57,8 @@ public:
   [[nodiscard]] AudioResult initialize();
   [[nodiscard]] AudioResult shutdown();
   [[nodiscard]] AudioBackendState state() const;
+  [[nodiscard]] std::vector<AudioInputDevice> inputDevices() const;
+  [[nodiscard]] std::optional<int> defaultInputDevice() const;
 
 private:
   Backend& backend_;

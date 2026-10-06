@@ -19,7 +19,9 @@ int main(int argc, char* argv[]) {
     qWarning() << "PortAudio backend unavailable:" << QString::fromStdString(audioResult.detail);
   }
 
-  MainWindow window(audioResult);
+  const std::vector<AudioInputDevice> inputDevices = audioManager.inputDevices();
+  const std::optional<int> defaultInputDevice = audioManager.defaultInputDevice();
+  MainWindow window(audioResult, inputDevices, defaultInputDevice);
   window.show();
 
   if (QApplication::arguments().contains("--smoke-test")) {
