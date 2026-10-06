@@ -2,6 +2,8 @@
 
 #include <portaudio.h>
 
+#include <optional>
+
 namespace {
 
 class PortAudioBackend final : public AudioManager::Backend {
@@ -17,6 +19,25 @@ public:
   [[nodiscard]] std::string errorText(int errorCode) const override {
     const char* const errorText = Pa_GetErrorText(static_cast<PaError>(errorCode));
     return errorText == nullptr ? "Unknown PortAudio error" : errorText;
+  }
+
+  [[nodiscard]] int deviceCount() const override {
+    return Pa_GetDeviceCount();
+  }
+
+  [[nodiscard]] int defaultInputDevice() const override {
+    return Pa_GetDefaultInputDevice();
+  }
+
+  [[nodiscard]] std::optional<AudioInputDevice> inputDevice(int index) const override {
+    const PaDeviceInfo* const info = Pa_GetDeviceInfo(index);
+    if (info == nullptr || info->maxInputChannels <= 0) {
+      return std::nullopt;
+    }
+    return AudioInputDevice{.index = index,
+                            .name = info->name == nullptr ? "" : info->name,
+                            .max_input_channels = info->maxInputChannels,
+                            .default_sample_rate = info->defaultSampleRate};
   }
 };
 
@@ -70,4 +91,41 @@ AudioResult AudioManager::shutdown() {
 
 AudioBackendState AudioManager::state() const {
   return state_;
+}
+
+std::vector<AudioInputDevice> AudioManager::inputDevices() const {
+  std::vector<AudioInputDevice> devices;
+  if (state_ != AudioBackendState::Initialized) {
+    return devices;
+  }
+
+  const int count = backend_.deviceCount();
+  if (count <= 0) {
+    return devices;
+  }
+  devices.reserve(static_cast<std::size_t>(count));
+  for (int index = 0; index < count; ++index) {
+    const auto device = backend_.inputDevice(index);
+    if (device.has_value() && device->index == index && device->max_input_channels > 0 && !device->name.empty()) {
+      devices.push_back(*device);
+    }
+  }
+  return devices;
+}
+
+std::optional<int> AudioManager::defaultInputDevice() const {
+  if (state_ != AudioBackendState::Initialized) {
+    return std::nullopt;
+  }
+  const int index = backend_.defaultInputDevice();
+  if (index < 0) {
+    return std::nullopt;
+  }
+  const auto devices = inputDevices();
+  for (const auto& device : devices) {
+    if (device.index == index) {
+      return index;
+    }
+  }
+  return std::nullopt;
 }
