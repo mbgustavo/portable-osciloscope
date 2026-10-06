@@ -32,6 +32,7 @@
 - This repository uses both OpenCode and Codex. Create and maintain agent skills in `.agents/skills/`; `.opencode/skills` is a symlink to that directory and keeps those skills compatible with OpenCode.
 - When adding a test executable, add its build path to the `Restore Linux executable permissions` step in `.github/workflows/ci.yml` so the downloaded artifact can run under CTest.
 - Keep source and documentation lines to a maximum of 120 characters.
+- Add concise comments to functions and methods when their purpose or non-obvious behavior is not clear from their names and implementation; avoid comments that merely restate obvious code.
 - Keep proposed code/layout aligned with the planned C++/Qt/PortAudio architecture in `docs/architecture/architecture.md` (audio callback -> ring buffer -> DSP -> GUI).
 - Respect roadmap gating in `docs/roadmap/roadmap.md`: waveform/audio-capture milestones come before FFT/spectrum/spectrogram work.
 - If docs and future executable config/scripts diverge, trust executable config/scripts and update docs to match.

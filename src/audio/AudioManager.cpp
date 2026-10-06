@@ -8,14 +8,17 @@ namespace {
 
 class PortAudioBackend final : public AudioManager::Backend {
 public:
+  // Initialize PortAudio's process-wide host API state.
   int initialize() override {
     return Pa_Initialize();
   }
 
+  // Release PortAudio's process-wide host API state.
   int terminate() override {
     return Pa_Terminate();
   }
 
+  // Translate backend error codes to readable diagnostics.
   [[nodiscard]] std::string errorText(int errorCode) const override {
     const char* const errorText = Pa_GetErrorText(static_cast<PaError>(errorCode));
     return errorText == nullptr ? "Unknown PortAudio error" : errorText;
@@ -29,6 +32,7 @@ public:
     return Pa_GetDefaultInputDevice();
   }
 
+  // Return details only for devices that can accept input audio.
   [[nodiscard]] std::optional<AudioInputDevice> inputDevice(int index) const override {
     const PaDeviceInfo* const info = Pa_GetDeviceInfo(index);
     if (info == nullptr || info->maxInputChannels <= 0) {
@@ -42,6 +46,7 @@ public:
 };
 
 AudioManager::Backend& defaultBackend() {
+  // Keep one backend instance alive for the default manager's reference lifetime.
   static PortAudioBackend backend;
   return backend;
 }
@@ -121,6 +126,7 @@ std::optional<int> AudioManager::defaultInputDevice() const {
   if (index < 0) {
     return std::nullopt;
   }
+  // Only report a default that survived the same validation used for the visible device list.
   const auto devices = inputDevices();
   for (const auto& device : devices) {
     if (device.index == index) {

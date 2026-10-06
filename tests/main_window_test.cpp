@@ -7,11 +7,13 @@
 #include <cstdlib>
 
 int main(int argc, char* argv[]) {
+  // Construct widgets under a Qt application instance so child controls can be inspected.
   QApplication app(argc, argv);
   const AudioResult result{
       .error_code = AudioErrorCode::InitializationFailed,
       .detail = "PortAudio initialization failed",
   };
+  // Backend failure is shown to the user and disables device selection.
   MainWindow failedWindow(result);
   const auto* status = failedWindow.findChild<QLabel*>("audioStatus");
   const auto* failedSelector = failedWindow.findChild<QComboBox*>("inputDeviceSelector");
@@ -21,6 +23,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
+  // Available devices retain their backend indices, and the reported default is selected.
   const AudioResult availableResult{};
   MainWindow availableWindow(
       availableResult,
@@ -33,6 +36,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
+  // A successful backend with no input devices still leaves selection disabled and empty.
   MainWindow emptyWindow(availableResult);
   const auto* emptySelector = emptyWindow.findChild<QComboBox*>("inputDeviceSelector");
   return emptySelector != nullptr && !emptySelector->isEnabled() &&
