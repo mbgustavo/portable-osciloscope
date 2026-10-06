@@ -6,6 +6,7 @@
 #include <vector>
 
 struct AudioInputDevice {
+  // Index is the backend's device identifier and is stored in the UI selector.
   int index{};
   std::string name;
   int max_input_channels{};

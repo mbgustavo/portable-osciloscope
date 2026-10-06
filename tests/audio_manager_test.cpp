@@ -20,29 +20,35 @@ public:
   int default_input_device{-1};
   mutable int enumeration_calls{0};
 
+  // Records the call and returns the configured result for lifecycle tests.
   int initialize() override {
     ++initialize_calls;
     return initialize_result;
   }
 
+  // Records termination so tests can verify cleanup and idempotency.
   int terminate() override {
     ++terminate_calls;
     return terminate_result;
   }
 
+  // Supplies deterministic error details without depending on PortAudio's host environment.
   [[nodiscard]] std::string errorText(int errorCode) const override {
     static_cast<void>(errorCode);
     return error_text;
   }
 
+  // Exposes the configured device slots, including invalid entries used by filtering tests.
   [[nodiscard]] int deviceCount() const override {
     return static_cast<int>(devices.size());
   }
 
+  // Returns the configured default device index, or -1 when no default is set.
   [[nodiscard]] int defaultInputDevice() const override {
     return default_input_device;
   }
 
+  // Returns a configured device slot and counts accesses to verify initialization gating.
   [[nodiscard]] std::optional<AudioInputDevice> inputDevice(int index) const override {
     ++enumeration_calls;
     return index >= 0 && static_cast<std::size_t>(index) < devices.size() ? devices[static_cast<std::size_t>(index)]
@@ -81,6 +87,7 @@ bool testSuccessfulLifecycle() {
 }
 
 bool testInitializationFailure() {
+  // A failed initialization reports the backend error and must not attempt termination.
   FakeBackend backend;
   backend.initialize_result = paUnanticipatedHostError;
   backend.error_text = "PortAudio initialization failed";
@@ -99,6 +106,7 @@ bool testInitializationFailure() {
 }
 
 bool testDestructorCleanup() {
+  // Leaving scope after successful initialization releases the backend automatically.
   FakeBackend backend;
   {
     AudioManager manager(backend);
@@ -110,6 +118,7 @@ bool testDestructorCleanup() {
 }
 
 bool testTerminationFailure() {
+  // A failed termination keeps the manager initialized so callers can observe the unreleased state.
   FakeBackend backend;
   backend.terminate_result = paUnanticipatedHostError;
   AudioManager manager(backend);
@@ -124,6 +133,7 @@ bool testTerminationFailure() {
 }
 
 bool testInputDeviceEnumeration() {
+  // Enumeration is unavailable before initialization and filters output-only, missing, and unnamed devices.
   FakeBackend backend;
   backend.devices = {
       AudioInputDevice{.index = 0, .name = "Output only", .max_input_channels = 0, .default_sample_rate = 48000.0},
@@ -143,6 +153,7 @@ bool testInputDeviceEnumeration() {
 }
 
 bool testEnumerationAfterInitializationFailure() {
+  // Device queries must not reach the backend when initialization did not succeed.
   FakeBackend backend;
   backend.initialize_result = paUnanticipatedHostError;
   backend.devices = {
@@ -155,6 +166,7 @@ bool testEnumerationAfterInitializationFailure() {
 } // namespace
 
 int main() {
+  // Run every lifecycle and enumeration check; any failed case makes the executable fail.
   return testSuccessfulLifecycle() && testInitializationFailure() && testDestructorCleanup() &&
                  testTerminationFailure() && testInputDeviceEnumeration() && testEnumerationAfterInitializationFailure()
              ? EXIT_SUCCESS

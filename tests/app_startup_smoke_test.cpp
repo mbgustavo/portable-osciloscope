@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 int main(int argc, char* argv[]) {
+  // CTest passes the built application path as the sole argument.
   if (argc != 2) {
     qCritical() << "Expected the application executable path.";
     return EXIT_FAILURE;
@@ -14,6 +15,7 @@ int main(int argc, char* argv[]) {
   process.setArguments({QStringLiteral("--smoke-test")});
   process.start();
 
+  // Catch launch failures and hangs before checking the application's exit result.
   if (!process.waitForStarted()) {
     qCritical() << "Failed to launch application:" << process.errorString();
     return EXIT_FAILURE;
@@ -24,6 +26,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
+  // Treat both crashes and ordinary nonzero exits as smoke-test failures.
   if (process.exitStatus() == QProcess::CrashExit) {
     qCritical() << "Application crashed:" << process.readAllStandardError();
     return EXIT_FAILURE;
